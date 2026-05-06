@@ -1,0 +1,21 @@
+# Dependencias
+node_modules/
+.pnpm-store/
+
+# Variables de entorno
+.env
+.env.local
+
+# Compilación y caché
+dist/
+.next/
+out/
+build/
+
+# Logs y bases de datos locales
+*.log
+docker/data/
+
+# Archivos del sistema
+.DS_Store
+Thumbs.db
