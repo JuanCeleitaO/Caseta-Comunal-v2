@@ -1,112 +1,62 @@
-import React, { useState, useEffect } from 'react';
-import { ConfigProvider, Layout, Typography, Button, Card, Row, Col, FloatButton, Space } from 'antd';
-import { CameraOutlined, WarningOutlined, ClockCircleOutlined, EnvironmentOutlined } from '@ant-design/icons';
-import axios from 'axios';
+import React, { useState } from 'react';
+import { ConfigProvider, Layout, Row, Col, Typography, Button, Card } from 'antd';
+import { CameraOutlined } from '@ant-design/icons';
 
-const { Header, Content, Footer } = Layout;
-const { Title, Text } = Typography;
+import HeaderSection from './components/Layout/Header';
+import ReportCard from './components/Reports/ReportCard';
+import ReportModal from './components/Reports/ReportModal';
 
-// Identidad visual basada en redes2nodos
-const themeConfig = {
-  token: {
-    colorPrimary: '#00b96b', // Verde comunitario
-    colorInfo: '#00b96b',
-    borderRadius: 12, // Bordes más suaves como en el modelo
-    wireframe: false,
-  },
-};
+const { Content } = Layout;
+const { Title } = Typography;
 
 const App = () => {
-  const [reportes, setReportes] = useState([]);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [refresh, setRefresh] = useState(0); // Para recargar la lista
 
   return (
-    <ConfigProvider theme={themeConfig}>
+    <ConfigProvider theme={{ token: { colorPrimary: '#00b96b', borderRadius: 12 } }}>
       <Layout style={{ minHeight: '100vh', background: '#f0f2f5' }}>
-        
-        {/* Header estilo Redes2Nodos */}
-        <Header style={{ 
-          background: '#fff', 
-          padding: '20px 0', 
-          height: 'auto', 
-          textAlign: 'center', 
-          lineHeight: 'normal',
-          boxShadow: '0 2px 8px rgba(0,0,0,0.06)' 
-        }}>
-          <Space direction="vertical" size={0}>
-            <Title level={2} style={{ margin: 0, color: '#00b96b' }}>
-              🏠 Caseta Comunal
-            </Title>
-            <Text type="secondary">
-              <EnvironmentOutlined /> Vereda Florencia, Caquetá
-            </Text>
-          </Space>
-        </Header>
+
+        <HeaderSection />
 
         <Content style={{ padding: '24px', maxWidth: '1200px', margin: '0 auto', width: '100%' }}>
-          
-          {/* Sección de Acción Principal */}
-          <Card 
-            style={{ 
-              marginBottom: 32, 
-              textAlign: 'center', 
-              borderRadius: 16,
-              border: '2px dashed #00b96b',
-              background: '#f6ffed'
-            }}
-          >
-            <CameraOutlined style={{ fontSize: '54px', color: '#00b96b', marginBottom: '16px' }} />
-            <Title level={3} style={{ marginTop: 0 }}>¿Hay una novedad en la vereda?</Title>
-            <Text style={{ display: 'block', marginBottom: '20px' }}>
-              Toma una foto para que los administradores puedan verla.
-            </Text>
-            <Button 
-              type="primary" 
-              size="large" 
+
+          {/* Banner de Acción */}
+          <Card style={{ marginBottom: 32, textAlign: 'center', border: '2px dashed #00b96b', background: '#f6ffed' }}>
+            <Title level={3}>¿Algo para reportar hoy?</Title>
+            <Button
+              type="primary"
+              size="large"
               icon={<CameraOutlined />}
-              block 
-              style={{ height: '64px', fontSize: '20px', borderRadius: '12px', fontWeight: 'bold' }}
+              onClick={() => setIsModalOpen(true)}
+              style={{ height: 60, padding: '0 40px', fontSize: 18, fontWeight: 'bold' }}
             >
-              REPORTAR AHORA
+              CREAR REPORTE
             </Button>
           </Card>
 
-          {/* Listado de Reportes */}
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
-            <Title level={4} style={{ margin: 0 }}>Reportes Recientes</Title>
-            <Text type="secondary">{reportes.length} reportes hoy</Text>
-          </div>
-
+          <Title level={4}>Reportes de la Vereda</Title>
           <Row gutter={[16, 16]}>
-            {/* Tarjeta de ejemplo */}
+            {/* Aquí mapearemos los reportes reales de la DB pronto */}
             <Col xs={24} sm={12} lg={8}>
-              <Card
-                hoverable
-                cover={<img alt="ejemplo" src="https://images.unsplash.com/photo-1582268611958-ebfd161ef9cf?q=80&w=500" style={{ height: 200, objectFit: 'cover' }} />}
-                style={{ borderRadius: 12, overflow: 'hidden' }}
-                actions={[
-                  <Space><ClockCircleOutlined /> <Text type="secondary">Pendiente</Text></Space>
-                ]}
-              >
-                <Card.Meta 
-                  title="Estado de la vía" 
-                  description="Derrumbe pequeño cerca a la escuela. Se necesita ayuda para limpiar."
-                />
-              </Card>
+              <ReportCard
+                title="Ejemplo"
+                description="Aquí aparecerán los reportes"
+                imageUrl="https://via.placeholder.com/400x200"
+              />
             </Col>
           </Row>
+
+          <ReportModal
+            visible={isModalOpen}
+            onCancel={() => setIsModalOpen(false)}
+            onSuccess={() => {
+              setIsModalOpen(false);
+              setRefresh(prev => prev + 1);
+            }}
+          />
         </Content>
 
-        <Footer style={{ textAlign: 'center', color: '#bfbfbf' }}>
-          ObsidianCat Studio ©2024 - Herramienta para la Comunidad
-        </Footer>
-
-        <FloatButton 
-          icon={<WarningOutlined />} 
-          type="primary" 
-          tooltip="Emergencia" 
-          style={{ right: 24, bottom: 24 }}
-        />
-        
       </Layout>
     </ConfigProvider>
   );
