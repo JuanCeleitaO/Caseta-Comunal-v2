@@ -1,62 +1,68 @@
 import React, { useState } from 'react';
-import { Modal, Form, Input, Upload, Button, message } from 'antd';
-import { UploadOutlined, CameraOutlined } from '@ant-design/icons';
+import { Modal, Form, Input, Upload, Button, App } from 'antd';
+import { CameraOutlined } from '@ant-design/icons';
 
-const ReportModal = ({ visible, onCancel, onSuccess }) => {
+const ReportModalContent = ({ visible, onCancel, onSuccess }) => {
     const [form] = Form.useForm();
     const [loading, setLoading] = useState(false);
+    const { message: messageApi } = App.useApp();
 
     const handleSubmit = async (values) => {
         setLoading(true);
         const formData = new FormData();
-        formData.append('autor', values.autor);
+
+        formData.append('autor_nombre', values.autor);
         formData.append('titulo', values.titulo);
-        formData.append('descripcion', values.descripcion);
-        // Tomamos el archivo del componente Upload de AntD
-        if (values.imagen && values.imagen.fileList[0]) {
-            formData.append('imagen', values.imagen.fileList[0].originFileObj);
+        formData.append('descripcion', values.descripcion || '');
+        if (values.imagen && values.imagen[0]) {
+            formData.append('imagen', values.imagen[0].originFileObj);
         }
 
         try {
-            // Nota: Aquí usamos la IP/URL de tu backend en Docker
-            const response = await fetch('http://localhost:4000/api/conflictos', {
+            // USAMOS FETCH NATIVO (No necesita instalar nada)
+            const response = await fetch('http://localhost:3004/api/reportes', {
                 method: 'POST',
                 body: formData,
             });
 
             if (response.ok) {
-                message.success('¡Reporte enviado con éxito!');
+                const data = await response.json();
+                messageApi.success('¡Reporte enviado con éxito!');
                 form.resetFields();
                 onSuccess();
+            } else {
+                const errorData = await response.json();
+                messageApi.error(errorData.error || 'Error en el servidor');
             }
         } catch (error) {
-            message.error('Error al conectar con el servidor');
+            console.error("Error en la conexión:", error);
+            messageApi.error('No se pudo conectar con el servidor en el puerto 3004');
         } finally {
             setLoading(false);
         }
     };
 
     return (
-        <Modal
-            title="Nuevo Reporte Comunitario"
-            open={visible}
-            onCancel={onCancel}
-            footer={null}
-            centered
-        >
+        <Modal title="Nuevo Reporte Comunitario" open={visible} onCancel={onCancel} footer={null} centered>
             <Form form={form} layout="vertical" onFinish={handleSubmit}>
                 <Form.Item name="autor" label="Tu Nombre" rules={[{ required: true }]}>
-                    <Input placeholder="Ej: Juan Pérez" />
+                    <Input placeholder="Ej: Juan David" />
                 </Form.Item>
                 <Form.Item name="titulo" label="¿Qué pasa?" rules={[{ required: true }]}>
-                    <Input placeholder="Ej: Puente roto" />
+                    <Input placeholder="Ej: Calle inundada" />
                 </Form.Item>
-                <Form.Item name="descripcion" label="Más detalles">
+                <Form.Item name="descripcion" label="Descripción">
                     <Input.TextArea rows={3} />
                 </Form.Item>
-                <Form.Item name="imagen" label="Foto de la novedad" rules={[{ required: true }]}>
+                <Form.Item
+                    name="imagen"
+                    label="Foto"
+                    rules={[{ required: true }]}
+                    valuePropName="fileList"
+                    getValueFromEvent={(e) => (Array.isArray(e) ? e : e?.fileList)}
+                >
                     <Upload beforeUpload={() => false} listType="picture" maxCount={1}>
-                        <Button icon={<CameraOutlined />} block size="large">Seleccionar o Tomar Foto</Button>
+                        <Button icon={<CameraOutlined />} block>Subir Foto</Button>
                     </Upload>
                 </Form.Item>
                 <Button type="primary" htmlType="submit" block size="large" loading={loading}>
@@ -66,5 +72,9 @@ const ReportModal = ({ visible, onCancel, onSuccess }) => {
         </Modal>
     );
 };
+
+const ReportModal = (props) => (
+    <App><ReportModalContent {...props} /></App>
+);
 
 export default ReportModal;

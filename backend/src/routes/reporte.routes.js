@@ -1,9 +1,10 @@
 const express = require('express');
 const router = express.Router();
-const upload = require('../utils/multer.config');
-const { crearReporte } = require('../controllers/conflict.controller');
+const upload = require('../config/multer');
 
-// Ruta: POST /api/conflictos
+const { crearReporte } = require('../controllers/reporte.controller');
+
+
 router.post('/', upload.single('imagen'), crearReporte);
 
 module.exports = router;

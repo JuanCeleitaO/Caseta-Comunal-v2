@@ -1,0 +1,44 @@
+services:
+  # Base de Datos
+  db-nosql:
+    image: mongodb/mongodb-community-server:8.0-ubuntu2204
+    container_name: caseta-mongo
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongodata:/data/db
+
+  # Backend (API) puerto 3004
+  api-server:
+    build:
+      context: .
+      dockerfile: docker/scripts/backend.Dockerfile
+    container_name: caseta-api
+    env_file:
+      - ./backend/.env
+    ports:
+      - "3004:3004"
+    environment:
+      - PORT=3004
+      - MONGO_URI=mongodb://db-nosql:27017/db_caseta
+    depends_on:
+      - db-nosql
+    volumes:
+      - ./backend:/app
+      - /app/node_modules
+      - ./backend/uploads:/app/uploads
+
+  # Frontend en puerto 
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: caseta-frontend
+    ports:
+      - "5177:5177"
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+
+volumes:
+  mongodata:

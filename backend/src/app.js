@@ -1,28 +1,37 @@
 const express = require('express');
 const cors = require('cors');
 const path = require('path');
-const conflictRoutes = require('./routes/conflict.routes');
 require('dotenv').config();
 
+const app = express(); // ÚNICA DECLARACIÓN
+
+// Conexión a MongoDB
 const connectMongo = require('./config/mongodb.config');
-// La conexión de Postgres se maneja mediante el pool según se necesite
+const reporteController = require('./controllers/reporte.controller');
 
-const app = express();
-
-// Middlewares iniciales
+//  Middlewares
 app.use(cors());
 app.use(express.json());
-app.use('/uploads', express.static(path.join(__dirname, 'public/uploads'))); // Sirve las imágenes subidas
 
-app.use('/api/conflictos', conflictRoutes);
+app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
 
-// Inicializar conexiones
-connectMongo();
-
-const PORT = process.env.PORT || 4000;
-
-app.listen(PORT, () => {
-  console.log(`Servidor de la Caseta Comunal corriendo en el puerto ${PORT}`);
+//Endpoint
+app.get('/health', (req, res) => {
+  res.status(200).json({
+    status: 'ok',
+    servicio: 'caseta-comunal',
+    version: '1.0.0',
+    timestamp: new Date().toISOString()
+  });
 });
 
+app.use('/api/reportes', require('./routes/reporte.routes'));
+
+// Inicializar a mongoBD
+connectMongo();
+const PORT = process.env.PORT || 3004;
+
+app.listen(PORT, '0.0.0.0', () => {
+  console.log(`✅ Servidor de la Caseta Comunal corriendo en el puerto ${PORT}`);
+});
 module.exports = app;

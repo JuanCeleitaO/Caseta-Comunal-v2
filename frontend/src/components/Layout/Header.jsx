@@ -1,4 +1,4 @@
-import React from 'react';
+
 import { Layout, Typography, Space } from 'antd';
 import { EnvironmentOutlined } from '@ant-design/icons';
 
