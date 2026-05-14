@@ -1,0 +1,36 @@
+
+services:
+  api-server:
+    build:
+      context: .
+      dockerfile: docker/scripts/backend.Dockerfile
+    container_name: caseta-backend
+    env_file:
+      - ./backend/.env
+    ports:
+      - "3004:3004"
+    environment:
+      - PORT=3004
+    volumes:
+      - ./backend:/app
+      - /app/node_modules
+      - ./backend/uploads:/app/uploads
+    networks:
+      - infra_default
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: caseta-frontend
+    ports:
+      - "5177:5177"
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    networks:
+      - infra_default
+
+networks:
+  infra_default:
+    external: true

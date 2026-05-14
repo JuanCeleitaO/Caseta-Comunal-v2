@@ -25,7 +25,7 @@ app.get('/health', (req, res) => {
   });
 });
 
-app.use('/api/reportes', require('./routes/reporte.routes'));
+app.use('/reportes', require('./routes/reporte.routes'));
 
 // Inicializar a mongoBD
 connectMongo();
