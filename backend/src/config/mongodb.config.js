@@ -1,13 +1,13 @@
-const mongoose = require('mongoose');
-require('dotenv').config();
+const mongoose = require("mongoose");
+
+const URI = process.env.MONGO_URI || "mongodb://caseta-mongo:27017/db_caseta";
 
 const connectMongo = async () => {
   try {
-    await mongoose.connect(process.env.MONGO_URI);
-    console.log('MongoDB: Conexión establecida con éxito.');
+    await mongoose.connect(URI);
+    console.log("✅ MongoDB: Conexión establecida con éxito.");
   } catch (error) {
-    console.error('MongoDB: Error al conectar.', error);
-    process.exit(1);
+    console.error("❌ MongoDB: Error al conectar.", error);
   }
 };
 

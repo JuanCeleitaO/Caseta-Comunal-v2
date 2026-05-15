@@ -3,6 +3,7 @@ import { Row, Col, Spin, Empty, Card, Button, Typography } from 'antd';
 import { CameraOutlined } from '@ant-design/icons';
 import ReportCard from '../../components/Reports/ReportCard';
 import ReportModal from '../../components/Reports/ReportModal';
+import { obtenerReportes } from '../../services/reportes.service';
 
 const { Title } = Typography;
 
@@ -15,11 +16,8 @@ const Dashboard = () => {
     const fetchReportes = useCallback(async () => {
         setLoading(true);
         try {
-            const response = await fetch('http://localhost:3004/api/reportes');
-            if (response.ok) {
-                const data = await response.json();
-                setReportes(data);
-            }
+            const data = await obtenerReportes();
+            setReportes(data);
         } catch (error) {
             console.error("Error al cargar reportes:", error);
         } finally {
@@ -59,7 +57,7 @@ const Dashboard = () => {
                             <ReportCard
                                 title={item.titulo}
                                 description={item.descripcion}
-                                imageUrl={`http://localhost:3004${item.foto_url}`}
+                                imageUrl={`${import.meta.env.VITE_API_URL || 'http://localhost:3004'}${item.foto_url}`}
                                 autor={item.autor_nombre}
                                 estado={item.estado}
                             />

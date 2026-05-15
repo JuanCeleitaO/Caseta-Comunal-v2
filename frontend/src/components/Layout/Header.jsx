@@ -1,28 +1,17 @@
-
-import { Layout, Typography, Space } from 'antd';
-import { EnvironmentOutlined } from '@ant-design/icons';
+import React from 'react';
+import { Layout, Typography } from 'antd';
+import { HomeOutlined } from '@ant-design/icons';
 
 const { Header } = Layout;
-const { Title, Text } = Typography;
+const { Title } = Typography;
 
-const HeaderSection = () => (
-    <Header style={{
-        background: '#fff',
-        padding: '20px 0',
-        height: 'auto',
-        textAlign: 'center',
-        lineHeight: 'normal',
-        boxShadow: '0 2px 8px rgba(0,0,0,0.06)'
-    }}>
-        <Space orientation="vertical" size={0}>
-            <Title level={2} style={{ margin: 0, color: '#00b96b' }}>
-                🏠 Caseta Comunal
-            </Title>
-            <Text type="secondary">
-                <EnvironmentOutlined /> Vereda Travesias, Caquetá
-            </Text>
-        </Space>
-    </Header>
-);
+const HeaderSection = () => {
+    return (
+        <Header style={{ background: '#fff', padding: '0 24px', display: 'flex', alignItems: 'center', boxShadow: '0 2px 8px rgba(0,0,0,0.1)' }}>
+            <HomeOutlined style={{ fontSize: '24px', color: '#00b96b', marginRight: '12px' }} />
+            <Title level={3} style={{ margin: 0 }}>Caseta Comunal</Title>
+        </Header>
+    );
+};
 
 export default HeaderSection;

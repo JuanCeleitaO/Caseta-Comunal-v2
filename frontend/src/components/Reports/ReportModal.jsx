@@ -1,92 +1,90 @@
 import React, { useState } from 'react';
-import { Modal, Form, Input, Upload, Button, App as AntApp } from 'antd';
-import { UploadOutlined } from '@ant-design/icons';
+import { Modal, Form, Input, Button, Upload, message } from 'antd';
+import { CameraOutlined, UploadOutlined } from '@ant-design/icons';
+import { crearReporte } from '../../services/reportes.service';
 
 const ReportModal = ({ visible, onCancel, onSuccess }) => {
     const [form] = Form.useForm();
     const [loading, setLoading] = useState(false);
+    const [fileList, setFileList] = useState([]);
 
-    const { message } = AntApp.useApp();
+    const handleFinish = async (values) => {
+        if (fileList.length === 0) {
+            message.error('Debe adjuntar una foto del problema.');
+            return;
+        }
 
-    const handleSubmit = async (values) => {
+        const formData = new FormData();
+        formData.append('autor_nombre', values.autor_nombre);
+        formData.append('titulo', values.titulo);
+        if (values.descripcion) {
+            formData.append('descripcion', values.descripcion);
+        }
+        formData.append('foto', fileList[0].originFileObj);
+
         setLoading(true);
         try {
-            const formData = new FormData();
-            formData.append('titulo', values.titulo);
-            formData.append('autor_nombre', values.autor_nombre);
-            formData.append('descripcion', values.descripcion || '');
-
-            if (values.foto && values.foto.length > 0) {
-                formData.append('foto', values.foto[0].originFileObj);
-            }
-
-            const response = await fetch('http://localhost:3004/api/reportes', {
-                method: 'POST',
-                body: formData,
-            });
-
-            if (response.ok) {
-                message.success('Reporte enviado con éxito');
-                form.resetFields();
-                onSuccess();
-            } else {
-                message.error('Error al enviar el reporte');
-            }
+            await crearReporte(formData);
+            message.success('Reporte creado exitosamente');
+            form.resetFields();
+            setFileList([]);
+            onSuccess();
         } catch (error) {
-            message.error('Error de conexión con el servidor');
+            console.error('Error al crear reporte:', error);
+            message.error('Hubo un error al enviar el reporte.');
         } finally {
             setLoading(false);
         }
     };
 
-    const normFile = (e) => {
-        if (Array.isArray(e)) return e;
-        return e?.fileList;
-    };
-
     return (
         <Modal
-            title="Nuevo Reporte Comunitario"
+            title={<><CameraOutlined /> Reportar un problema</>}
             open={visible}
             onCancel={onCancel}
             footer={null}
-            destroyOnHidden
+            destroyOnHidden={true}
         >
-            <Form form={form} layout="vertical" onFinish={handleSubmit}>
+            <Form form={form} layout="vertical" onFinish={handleFinish}>
                 <Form.Item
                     name="autor_nombre"
                     label="¿Tu nombre?"
-                    rules={[{ required: true, message: 'Ingresa tu nombre' }]}
+                    rules={[{ required: true, message: 'El nombre es obligatorio' }]}
                 >
-                    <Input placeholder="Ej: Juan David" />
+                    <Input placeholder="Ej. Pedro Ruiz" />
                 </Form.Item>
 
                 <Form.Item
                     name="titulo"
-                    label="¿Qué sucede?"
-                    rules={[{ required: true, message: 'Ingresa un título' }]}
+                    label="¿Qué está pasando?"
+                    rules={[{ required: true, message: 'Debe indicar cuál es el problema' }]}
                 >
-                    <Input placeholder="Ej: Árbol caído en la vía" />
-                </Form.Item>
-
-                <Form.Item name="descripcion" label="Detalles">
-                    <Input.TextArea rows={3} />
+                    <Input placeholder="Ej. Hueco en la vía principal" />
                 </Form.Item>
 
                 <Form.Item
-                    name="foto"
-                    label="Foto evidencia"
-                    valuePropName="fileList"
-                    getValueFromEvent={normFile}
-                    rules={[{ required: true, message: 'La foto es obligatoria' }]}
+                    name="descripcion"
+                    label="Descripción adicional (Opcional)"
                 >
-                    <Upload listType="picture" maxCount={1} beforeUpload={() => false}>
-                        <Button icon={<UploadOutlined />}>Subir Foto</Button>
+                    <Input.TextArea rows={3} placeholder="Detalles adicionales del daño..." />
+                </Form.Item>
+
+                <Form.Item label="Foto del problema" required>
+                    <Upload
+                        beforeUpload={() => false}
+                        maxCount={1}
+                        fileList={fileList}
+                        onChange={({ fileList: newFileList }) => setFileList(newFileList)}
+                        accept="image/jpeg,image/png,image/webp"
+                    >
+                        <Button size="large" icon={<UploadOutlined />} style={{ width: '100%' }}>
+                            Cámara o Galería
+                        </Button>
                     </Upload>
                 </Form.Item>
 
-                <Button type="primary" htmlType="submit" loading={loading} block>
-                    Enviar Reporte
+                <Button type="primary" htmlType="submit" loading={loading} block size="large">
+                    Enviar reporte
                 </Button>
             </Form>
         </Modal>
