@@ -1,43 +1,40 @@
 const Reporte = require("../models/reporte.model");
 
-// GET /health
 const healthCheck = (req, res) => {
-  res.status(200).json({
-    status: "ok",
-    servicio: "caseta-comunal",
-    version: "1.0.0",
-    timestamp: new Date().toISOString(),
-  });
+  res.json({ status: "ok", modulo: "reportes" });
 };
 
 const crearReporte = async (req, res) => {
   try {
-    const { titulo, descripcion, autor_nombre } = req.body;
+    const { autor_nombre, titulo, descripcion } = req.body;
 
-    if (!req.file) {
-      return res.status(400).json({ error: "La foto es obligatoria" });
+    if (!autor_nombre || !titulo) {
+      return res
+        .status(400)
+        .json({ error: "Nombre de autor y título son obligatorios" });
     }
 
-    const foto_url = `/uploads/${req.file.filename}`;
+    let foto_url = "";
+    if (req.file) {
+      // Guarda la ruta relativa para el frontend (/uploads/nombre-archivo.jpg)
+      foto_url = `/uploads/${req.file.filename}`;
+    }
 
     const nuevoReporte = new Reporte({
+      autor_nombre,
       titulo,
       descripcion,
-      autor_nombre,
       foto_url,
       estado: "pendiente",
     });
 
     await nuevoReporte.save();
-
-    res.status(201).json({
-      mensaje: "Reporte creado exitosamente",
-      reporte: nuevoReporte,
-    });
+    res.status(201).json(nuevoReporte);
   } catch (error) {
+    console.error("Error al crear reporte:", error);
     res
       .status(500)
-      .json({ error: "Error al crear el reporte", detalle: error.message });
+      .json({ error: "Error interno del servidor al guardar el reporte" });
   }
 };
 
@@ -46,12 +43,10 @@ const listar = async (req, res) => {
     const { estado } = req.query;
     const filtro = estado ? { estado } : {};
 
-    const reportes = await Reporte.find(filtro).sort({ creado_en: -1 });
+    const reportes = await Reporte.find(filtro).sort({ fecha_creacion: -1 });
     res.json(reportes);
   } catch (error) {
-
-    console.error("Error REAL en la base de datos:", error);
-    res.status(500).json({ error: "Error al obtener reportes" });
+    res.status(500).json({ error: "Error al obtener la lista de reportes" });
   }
 };
 
@@ -59,28 +54,47 @@ const cambiarEstado = async (req, res) => {
   try {
     const { id } = req.params;
     const { estado } = req.body;
-    //middleware debe estar activo
-    const reporte = await Reporte.findByIdAndUpdate(
+
+    const estadosValidos = ["pendiente", "en_revision", "solucionado"];
+    if (!estadosValidos.includes(estado)) {
+      return res.status(400).json({ error: "Estado no válido" });
+    }
+
+    const reporteActualizado = await Reporte.findByIdAndUpdate(
       id,
-      {
-        estado,
-        actualizado_por: req.usuario ? req.usuario.id : null,
-      },
+      { estado },
       { new: true },
     );
 
-    if (!reporte)
+    if (!reporteActualizado) {
       return res.status(404).json({ error: "Reporte no encontrado" });
+    }
 
-    res.json({ mensaje: "Estado actualizado", estado: reporte.estado });
+    res.json(reporteActualizado);
   } catch (error) {
-    res.status(500).json({ error: "Error al actualizar estado" });
+    res.status(500).json({ error: "Error al actualizar el estado" });
   }
 };
-//exportacion de los datos
+
+const eliminar = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const reporteEliminado = await Reporte.findByIdAndDelete(id);
+
+    if (!reporteEliminado) {
+      return res.status(404).json({ error: "Reporte no encontrado" });
+    }
+
+    res.json({ mensaje: "Reporte eliminado correctamente" });
+  } catch (error) {
+    res.status(500).json({ error: "Error al eliminar el reporte" });
+  }
+};
+
 module.exports = {
   healthCheck,
   crearReporte,
   listar,
   cambiarEstado,
+  eliminar,
 };

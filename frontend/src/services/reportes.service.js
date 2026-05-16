@@ -18,3 +18,15 @@ export const crearReporte = async (formData) => {
   });
   return response.data;
 };
+
+export const eliminarReporte = async (id) => {
+  
+  const token = localStorage.getItem("token");
+
+  const response = await axios.delete(`${API_URL}/reportes/${id}`, {
+    headers: {
+      Authorization: `Bearer ${token}`, 
+    },
+  });
+  return response.data;
+};

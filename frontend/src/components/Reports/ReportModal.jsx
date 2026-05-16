@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Modal, Form, Input, Button, Upload, message } from 'antd';
 import { CameraOutlined, UploadOutlined } from '@ant-design/icons';
 import { crearReporte } from '../../services/reportes.service';
@@ -7,6 +7,29 @@ const ReportModal = ({ visible, onCancel, onSuccess }) => {
     const [form] = Form.useForm();
     const [loading, setLoading] = useState(false);
     const [fileList, setFileList] = useState([]);
+    const [isAdmin, setIsAdmin] = useState(false);
+
+    useEffect(() => {
+        if (visible) {
+            try {
+                const token = localStorage.getItem('token');
+                const userData = localStorage.getItem('user');
+
+                if (token && userData) {
+                    const usuario = JSON.parse(userData);
+                    if (usuario && usuario.nombre) {
+                        form.setFieldsValue({ autor_nombre: usuario.nombre });
+                        setIsAdmin(true);
+                    }
+                }
+            } catch (error) {
+                console.error("Error al verificar credenciales:", error);
+            }
+        } else {
+            setIsAdmin(false);
+            setFileList([]);
+        }
+    }, [visible, form]);
 
     const handleFinish = async (values) => {
         if (fileList.length === 0) {
@@ -43,7 +66,7 @@ const ReportModal = ({ visible, onCancel, onSuccess }) => {
             open={visible}
             onCancel={onCancel}
             footer={null}
-            destroyOnHidden={true}
+            destroyOnHidden
         >
             <Form form={form} layout="vertical" onFinish={handleFinish}>
                 <Form.Item
@@ -51,7 +74,7 @@ const ReportModal = ({ visible, onCancel, onSuccess }) => {
                     label="¿Tu nombre?"
                     rules={[{ required: true, message: 'El nombre es obligatorio' }]}
                 >
-                    <Input placeholder="Ej. Pedro Ruiz" />
+                    <Input placeholder="Ej. Armando Mendoza" disabled={isAdmin} />
                 </Form.Item>
 
                 <Form.Item
@@ -59,14 +82,11 @@ const ReportModal = ({ visible, onCancel, onSuccess }) => {
                     label="¿Qué está pasando?"
                     rules={[{ required: true, message: 'Debe indicar cuál es el problema' }]}
                 >
-                    <Input placeholder="Ej. Hueco en la vía principal" />
+                    <Input placeholder="Ej. Balance maquillado" />
                 </Form.Item>
 
-                <Form.Item
-                    name="descripcion"
-                    label="Descripción adicional (Opcional)"
-                >
-                    <Input.TextArea rows={3} placeholder="Detalles adicionales del daño..." />
+                <Form.Item name="descripcion" label="Descripción adicional (Opcional)">
+                    <Input.TextArea rows={3} placeholder="Detalles sobre el problema..." />
                 </Form.Item>
 
                 <Form.Item label="Foto del problema" required>
@@ -78,12 +98,12 @@ const ReportModal = ({ visible, onCancel, onSuccess }) => {
                         accept="image/jpeg,image/png,image/webp"
                     >
                         <Button size="large" icon={<UploadOutlined />} style={{ width: '100%' }}>
-                            Cámara o Galería
+                            Seleccionar Imagen o Abrir Cámara
                         </Button>
                     </Upload>
                 </Form.Item>
 
-                <Button type="primary" htmlType="submit" loading={loading} block size="large">
+                <Button type="primary" htmlType="submit" loading={loading} block size="large" style={{ marginTop: '8px' }}>
                     Enviar reporte
                 </Button>
             </Form>
