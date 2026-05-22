@@ -7,7 +7,7 @@ const ReportModal = ({ visible, onCancel, onSuccess }) => {
     const [form] = Form.useForm();
     const [loading, setLoading] = useState(false);
     const [fileList, setFileList] = useState([]);
-    const [isAdmin, setIsAdmin] = useState(false);
+    const [isLoggedIn, setIsLoggedIn] = useState(false);
 
     useEffect(() => {
         if (visible) {
@@ -19,14 +19,14 @@ const ReportModal = ({ visible, onCancel, onSuccess }) => {
                     const usuario = JSON.parse(userData);
                     if (usuario && usuario.nombre) {
                         form.setFieldsValue({ autor_nombre: usuario.nombre });
-                        setIsAdmin(true);
+                        setIsLoggedIn(true); // <--- Ajuste aquí
                     }
                 }
             } catch (error) {
                 console.error("Error al verificar credenciales:", error);
             }
         } else {
-            setIsAdmin(false);
+            setIsLoggedIn(false); // <--- Ajuste aquí
             setFileList([]);
         }
     }, [visible, form]);
@@ -74,7 +74,7 @@ const ReportModal = ({ visible, onCancel, onSuccess }) => {
                     label="¿Tu nombre?"
                     rules={[{ required: true, message: 'El nombre es obligatorio' }]}
                 >
-                    <Input placeholder="Ej. Armando Mendoza" disabled={isAdmin} />
+                    <Input placeholder="Ej. Armando Mendoza" disabled={isLoggedIn} />
                 </Form.Item>
 
                 <Form.Item

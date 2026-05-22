@@ -11,21 +11,27 @@ export const obtenerReportes = async (estado = "") => {
 };
 
 export const crearReporte = async (formData) => {
+  const token = localStorage.getItem("token");
+  const headers = {
+    "Content-Type": "multipart/form-data",
+  };
+
+  
+  if (token) {
+    headers["Authorization"] = `Bearer ${token}`;
+  }
+
   const response = await axios.post(`${API_URL}/reportes`, formData, {
-    headers: {
-      "Content-Type": "multipart/form-data",
-    },
+    headers,
   });
   return response.data;
 };
-
 export const eliminarReporte = async (id) => {
-  
   const token = localStorage.getItem("token");
 
   const response = await axios.delete(`${API_URL}/reportes/${id}`, {
     headers: {
-      Authorization: `Bearer ${token}`, 
+      Authorization: `Bearer ${token}`,
     },
   });
   return response.data;

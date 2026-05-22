@@ -1,11 +1,28 @@
-import React from 'react';
-import { Layout, Typography, Button } from 'antd';
-import { HomeTwoTone, ArrowLeftOutlined } from '@ant-design/icons';
+import React, { useState, useEffect } from 'react';
+import { Layout, Typography, Button, Space, Avatar } from 'antd';
+import { HomeTwoTone, ArrowLeftOutlined, UserOutlined } from '@ant-design/icons';
 
 const { Header } = Layout;
-const { Title } = Typography;
+const { Title, Text } = Typography;
 
 const HeaderSection = () => {
+    const [nombreUsuario, setNombreUsuario] = useState(null);
+
+    // Buscamos si hay un usuario logueado al cargar el Header
+    useEffect(() => {
+        const userData = localStorage.getItem('user');
+        if (userData) {
+            try {
+                const usuario = JSON.parse(userData);
+                if (usuario && usuario.nombre) {
+                    setNombreUsuario(usuario.nombre);
+                }
+            } catch (error) {
+                console.error("Error al leer datos del usuario", error);
+            }
+        }
+    }, []);
+
     return (
         <Header style={{
             background: '#ffffff',
@@ -27,18 +44,27 @@ const HeaderSection = () => {
                 </Title>
             </div>
 
-            <Button
-                type="default"
-                icon={<ArrowLeftOutlined />}
-                onClick={() => window.history.back()}
-                style={{
-                    borderRadius: '8px',
-                    fontWeight: '600',
-                    color: '#595959'
-                }}
-            >
-                Volver
-            </Button>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+                {/* Si hay usuario, mostramos su nombre y avatar */}
+                {nombreUsuario && (
+                    <Space style={{ display: { xs: 'none', sm: 'flex' } }}>
+                        <Avatar style={{ backgroundColor: '#00b96b' }} icon={<UserOutlined />} />
+                        <Text strong style={{ color: '#595959' }}>{nombreUsuario}</Text>
+                    </Space>
+                )}
+                <Button
+                    type="default"
+                    icon={<ArrowLeftOutlined />}
+                    onClick={() => window.history.back()}
+                    style={{
+                        borderRadius: '8px',
+                        fontWeight: '600',
+                        color: '#595959'
+                    }}
+                >
+                    Volver
+                </Button>
+            </div>
         </Header>
     );
 };

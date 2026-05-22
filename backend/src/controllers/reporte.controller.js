@@ -16,16 +16,20 @@ const crearReporte = async (req, res) => {
 
     let foto_url = "";
     if (req.file) {
-      // Guarda la ruta relativa para el frontend (/uploads/nombre-archivo.jpg)
       foto_url = `/uploads/${req.file.filename}`;
     }
+
+    const tieneToken =
+      req.headers.authorization &&
+      req.headers.authorization.startsWith("Bearer ");
+    const estadoInicial = tieneToken ? "pendiente" : "en_revision";
 
     const nuevoReporte = new Reporte({
       autor_nombre,
       titulo,
       descripcion,
       foto_url,
-      estado: "pendiente",
+      estado: estadoInicial,
     });
 
     await nuevoReporte.save();
